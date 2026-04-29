@@ -1,0 +1,98 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// --- Entidades do Sistema ---
+
+model User {
+  id            String     @id @default(uuid())
+  email         String     @unique
+  passwordHash  String
+  name          String
+  birthDate     DateTime?
+  skinType      SkinType?
+  fitzpatrick   Int?       // Fototipo 1-6
+  allergies     String[]   // Lista de alérgenos
+  
+  // Relacionamento com a Clínica (SaaS)
+  clinicId      String?
+  clinic        Clinic?    @relation(fields: [clinicId], references: [id])
+  
+  analyses      Analysis[]
+  analises      Analise[]
+  createdAt     DateTime   @default(now())
+}
+
+model Clinic {
+  id        String    @id @default(uuid())
+  name      String
+  users     User[]
+  products  Product[]
+  createdAt DateTime  @default(now())
+}
+
+model Analysis {
+  id           String   @id @default(uuid())
+  userId       String
+  user         User     @relation(fields: [userId], references: [id])
+  area         Area     // FACE, NECK, etc
+  imageUrl     String   // URL no Cloudflare R2
+  scores       Json     // { hydration: 72, acne: 8... }
+  confidence   Float
+  modelVersion String
+  processingMs Int
+  createdAt    DateTime @default(now())
+}
+
+model Analise {
+  id        String   @id @default(uuid())
+  userId    String
+  imageUrl  String
+  resultado Json     // Aqui guardaremos os dados da IA (acne, rugas, etc)
+  createdAt DateTime @default(now())
+  
+  usuario   User     @relation(fields: [userId], references: [id])
+}
+
+model Product {
+  id               String   @id @default(uuid())
+  name             String
+  description      String
+  imageUrl         String?
+  price            Decimal
+  category         Category
+  targetScores     Json     // Ex: { acne: [60, 100] }
+  contraindications String[]
+  
+  clinicId         String
+  clinic           Clinic   @relation(fields: [clinicId], references: [id])
+}
+
+// --- Enums (Segurança de tipos) ---
+
+enum SkinType {
+  OILY
+  DRY
+  COMBINATION
+  NORMAL
+}
+
+enum Area {
+  FACE
+  NECK
+  CHEST
+  HANDS
+}
+
+enum Category {
+  CLEANSER
+  TONER
+  SERUM
+  MOISTURIZER
+  SUNSCREEN
+  TREATMENT
+}
