@@ -11,22 +11,23 @@ async function bootstrap() {
   app.useGlobalFilters(new PrismaExceptionFilter());
 
   // 2. CONFIGURAÇÃO DE CORS
-  // A versão abaixo é segura para desenvolvimento e permite acesso via IP/Celular
+  const productionOrigins = process.env.ALLOWED_ORIGINS
+    ? process.env.ALLOWED_ORIGINS.split(',').map(o => o.trim())
+    : [];
+
   app.enableCors({
     origin: (origin, callback) => {
-      // Se quiser liberar para ABSOLUTAMENTE TUDO como no seu segundo código:
-      // return callback(null, true); 
-
-      const allowedOrigins = [
+      const devOrigins = [
         'http://localhost:3000',
         'http://127.0.0.1:3000',
         'http://localhost:5173',
         'http://127.0.0.1:5173',
       ];
 
-      // Regex para permitir conexões via IP na rede local (Ex: 192.168.x.x)
-      const isLocalNetwork = 
-        !origin || 
+      const allowedOrigins = [...devOrigins, ...productionOrigins];
+
+      const isLocalNetwork =
+        !origin ||
         allowedOrigins.includes(origin) ||
         /^http:\/\/(192\.168\.\d+\.\d+|10\.\d+\.\d+\.\d+|172\.(1[6-9]|2\d|3[01])\.\d+\.\d+):(3000|5173)$/.test(origin);
 
