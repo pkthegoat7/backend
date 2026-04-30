@@ -19,10 +19,10 @@ export class PrismaExceptionFilter implements ExceptionFilter {
       });
     }
 
-    // Para outros erros do Prisma, retornar erro genérico
+    // Para outros erros do Prisma, retornar o código para debug
     return response.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
       statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
-      message: 'Database error',
+      message: `Database error [${exception.code}]: ${exception.message}`,
       error: 'Internal Server Error',
     });
   }
