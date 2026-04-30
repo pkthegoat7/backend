@@ -26,12 +26,13 @@ async function bootstrap() {
 
       const allowedOrigins = [...devOrigins, ...productionOrigins];
 
-      const isLocalNetwork =
+      const isAllowed =
         !origin ||
         allowedOrigins.includes(origin) ||
+        /^https?:\/\/.*\.vercel\.app$/.test(origin) ||
         /^http:\/\/(192\.168\.\d+\.\d+|10\.\d+\.\d+\.\d+|172\.(1[6-9]|2\d|3[01])\.\d+\.\d+):(3000|5173)$/.test(origin);
 
-      if (isLocalNetwork) {
+      if (isAllowed) {
         callback(null, true);
       } else {
         callback(new Error('Origem não permitida pelo CORS'));
