@@ -78,6 +78,10 @@ export class AnaliseService {
     });
   }
 
+  async analisarImagem(imageBuffer: Buffer, landmarks: Landmark[] | null) {
+    return this.analisarComClaude(imageBuffer, landmarks);
+  }
+
   private async analisarComClaude(imageBuffer: Buffer, landmarks: Landmark[] | null) {
     let faceBuffer = imageBuffer;
 

@@ -72,6 +72,37 @@ model Product {
   clinic           Clinic   @relation(fields: [clinicId], references: [id])
 }
 
+model CampaignToken {
+  id        String   @id @default(uuid())
+  slug      String   @unique
+  campanha  String
+  ativo     Boolean  @default(true)
+  leads     Lead[]
+  createdAt DateTime @default(now())
+}
+
+model Lead {
+  id             String        @id @default(uuid())
+  nome           String
+  email          String
+  telefone       String
+  desejaMelhorar String
+  tokenId        String
+  token          CampaignToken @relation(fields: [tokenId], references: [id])
+  analise        LeadAnalise?
+  createdAt      DateTime      @default(now())
+}
+
+model LeadAnalise {
+  id           String   @id @default(uuid())
+  leadId       String   @unique
+  lead         Lead     @relation(fields: [leadId], references: [id])
+  imageUrl     String
+  resultado    Json
+  emailEnviado Boolean  @default(false)
+  createdAt    DateTime @default(now())
+}
+
 // --- Enums (Segurança de tipos) ---
 
 enum SkinType {
