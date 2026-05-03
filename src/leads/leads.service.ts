@@ -4,7 +4,7 @@ import { AnaliseService } from '../analise/analise.service';
 import { randomBytes } from 'crypto';
 import { ConfigService } from '@nestjs/config';
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
-import * as nodemailer from 'nodemailer';
+import { Resend } from 'resend';
 
 type Landmark = { x: number; y: number; z: number };
 
@@ -104,22 +104,14 @@ export class LeadsService {
     resultado: Resultado,
     analiseId: string,
   ) {
-    const smtpHost = this.configService.get<string>('SMTP_HOST');
+    const apiKey = this.configService.get<string>('RESEND_API_KEY');
 
-    if (!smtpHost) {
-      console.log(`[Email] SMTP não configurado — protocolo para ${email} (${nome})`);
+    if (!apiKey) {
+      console.log(`[Email] RESEND_API_KEY não configurada — protocolo para ${email} (${nome})`);
       return;
     }
 
-    const transporter = nodemailer.createTransport({
-      host: smtpHost,
-      port: Number(this.configService.get<string>('SMTP_PORT') ?? '587'),
-      secure: this.configService.get<string>('SMTP_PORT') === '465',
-      auth: {
-        user: this.configService.get<string>('SMTP_USER'),
-        pass: this.configService.get<string>('SMTP_PASS'),
-      },
-    });
+    const resend = new Resend(apiKey);
 
     const produtosHtml = resultado.recomendacoes
       .map(
@@ -183,10 +175,10 @@ export class LeadsService {
       </body>
       </html>`;
 
-    await transporter.sendMail({
-      from: `"Patrícia Elias Skin" <${this.configService.get<string>('SMTP_FROM') ?? 'noreply@patriciaeliasskin.com'}>`,
+    await resend.emails.send({
+      from: 'Patrícia Elias Skin <onboarding@resend.dev>',
       to: email,
-      subject: `${nome}, seu protocolo personalizado de pele está aqui 💌`,
+      subject: `${nome}, seu protocolo personalizado de pele está aqui`,
       html,
     });
 
